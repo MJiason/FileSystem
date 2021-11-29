@@ -1,2 +1,5 @@
-package PACKAGE_NAME;public enum FileTypes {
+public enum FileTypes {
+    FILE,
+    DIR,
+    LINK,
 }
