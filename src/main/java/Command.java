@@ -53,6 +53,18 @@ public class Command {
             case W:
                 fileSystemDriver.w();
                 break;
+            case MKDIR:
+                fileSystemDriver.mkdir(this.singleOperand);
+                break;
+            case RMDIR:
+                fileSystemDriver.rmdir(this.singleOperand);
+                break;
+            case CD:
+                fileSystemDriver.cd(this.singleOperand);
+                break;
+            case SIMULINK:
+                fileSystemDriver.symlink(this.singleOperand, this.secondOperand);
+                break;
         }
     }
 

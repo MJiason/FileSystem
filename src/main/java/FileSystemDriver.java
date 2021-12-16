@@ -1,3 +1,6 @@
+import org.omg.CosNaming.NamingContextPackage.NotFound;
+import sun.security.jca.GetInstance;
+
 import java.util.*;
 
 public class FileSystemDriver implements FileSystem {
@@ -11,6 +14,9 @@ public class FileSystemDriver implements FileSystem {
     private Persistence persistence = new PersistanceImpl();
 
     private List<SystemFile> files = new ArrayList<>();
+
+    private String currDir = "/home";
+
 
     private FileSystemDriver() {
     }
@@ -62,8 +68,22 @@ public class FileSystemDriver implements FileSystem {
             return;
         }
         for (SystemFile file : files) {
-            if (file.getFileType() == FileTypes.LINK) {
-                System.out.println(file.toString());
+            if (file.getFileType() == FileTypes.DIR) {
+                Dir dir;
+                try {
+                    dir = (Dir) file;
+                }catch (Exception e){
+                    continue;
+                }
+
+                if (Objects.equals(dir.getPath(), currDir)) {
+                    if (dir.getLinks() == null) {
+                        continue;
+                    }
+                    for (String link : dir.getLinks()) {
+                        System.out.println(link);
+                    }
+                }
             }
         }
     }
@@ -209,9 +229,13 @@ public class FileSystemDriver implements FileSystem {
     }
 
     private void createDirLink(String fileLink) {
-        SystemFile file = this.files.get(0);
+        SystemFile file = getCurrDir();
         List<String> links = file.getLinks();
-        links.add("home/" + fileLink);
+        if (links == null) {
+            links = new ArrayList<>();
+        }
+        links.add(currDir + fileLink);
+        file.setLinks(links);
     }
 
     private List<Integer> setFileBlocs(int size) {
@@ -250,5 +274,92 @@ public class FileSystemDriver implements FileSystem {
                 fileBlocs.addAll(file.getFileBlocks());
             }
         }
+    }
+
+    @Override
+    public void mkdir(String path) {
+
+        String dirName = path.split("/")[path.split("/").length - 1];
+        if (files.isEmpty()) {
+            System.out.println("file system not mounted");
+            return;
+        }
+
+        SystemFile testFile = new Dir(Utils.generateId(), FileTypes.DIR, dirName, 0, null, null, new ArrayList<>(), path);
+        files.add(testFile);
+        System.out.println("dir created");
+        persistence.saveFileSystem(this.files);
+    }
+
+    @Override
+    public void rmdir(String path) {
+        if (files.isEmpty()) {
+            System.out.println("file system not mounted");
+            return;
+        }
+
+        for (SystemFile file : files) {
+            if (file.getFileType() == FileTypes.DIR) {
+                Dir dir = (Dir) file;
+                if (Objects.equals(dir.getPath(), path)) {
+                    if (dir.getLinks().isEmpty()){
+                        files.remove(dir);
+                        persistence.saveFileSystem(files);
+                        System.out.println("dir removed");
+                        return;
+                    }
+                }
+            }
+        }
+
+        System.out.println("dir not found");
+    }
+
+    @Override
+    public void cd(String path) {
+        for (SystemFile file : files) {
+            if (file.getFileType() == FileTypes.DIR) {
+                Dir dir;
+                try {
+                    dir = (Dir) file;
+                }catch (Exception e){
+                    continue;
+                }
+
+                if (Objects.equals(dir.getPath(), path)) {
+                    this.currDir = path;
+                    System.out.println("dir changed to " + dir.getFileName());
+                    return;
+                }
+            }
+        }
+        System.out.println("Dir not found");
+    }
+
+    @Override
+    public void symlink(String str, String path) {
+        if (files.isEmpty()) {
+            System.out.println("file system not mounted");
+            return;
+        }
+        String fileName = path.split("/")[currDir.split("/").length - 1];
+        List<String> testLinks = new ArrayList<>();
+        List<Integer> testLinks1 = new ArrayList<>();
+        SystemFile testFile = new Simulink(Utils.generateId(), FileTypes.SIMULINK, fileName,
+        0, testLinks, testLinks1, new ArrayList<>(), str);
+        files.add(testFile);
+        createDirLink(fileName);
+        link(fileName, fileName);
+        System.out.println("file created");
+        persistence.saveFileSystem(this.files);
+    }
+
+    private SystemFile getCurrDir() {
+        for (SystemFile file : files) {
+            if (Objects.equals(file.getFileName(), currDir.split("/")[currDir.split("/").length - 1])) {
+                return file;
+            }
+        }
+          throw new NoSuchElementException();
     }
 }

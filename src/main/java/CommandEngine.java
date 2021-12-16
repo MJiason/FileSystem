@@ -36,6 +36,9 @@ public class CommandEngine {
                 case "open": return new Command(CommandType.OPEN, command[1], null);
                 case "close": return new Command(CommandType.CLOSE, command[1], null);
                 case "unlink": return new Command(CommandType.UNLINK, command[1], null);
+                case "mkdir": return new Command(CommandType.MKDIR, command[1], null);
+                case "rmdir": return new Command(CommandType.RMDIR, command[1], null);
+                case "cd": return new Command(CommandType.CD, command[1], null);
             }
         }
         if (command.length == 3) {
@@ -44,6 +47,7 @@ public class CommandEngine {
                 case "write": return new Command(CommandType.WRITE, command[1], command[2]);
                 case "truncate": return new Command(CommandType.TRUNCATE, command[1], command[2]);
                 case "link": return new Command(CommandType.LINK, command[1], command[2]);
+                case "simulink": return new Command(CommandType.SIMULINK, command[1], command[2]);
             }
         }
         return null;

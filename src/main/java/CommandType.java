@@ -10,5 +10,10 @@ public enum CommandType {
     LINK,
     UNLINK,
     TRUNCATE,
-    READ, W
+    READ,
+    W,
+    MKDIR,
+    RMDIR,
+    CD,
+    SIMULINK
 }

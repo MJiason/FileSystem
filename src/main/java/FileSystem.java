@@ -14,4 +14,8 @@ public interface FileSystem {
     void link(String name1, String name2);
     void unlink(String name);
     void truncate(UUID fdId, int offset);
+    void mkdir (String path);
+    void rmdir (String path);
+    void cd (String path);
+    void symlink(String str, String path);
 }

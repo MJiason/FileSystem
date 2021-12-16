@@ -1,5 +1,5 @@
 public enum FileTypes {
     FILE,
     DIR,
-    LINK,
+    SIMULINK, LINK
 }
